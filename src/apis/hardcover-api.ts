@@ -15,8 +15,9 @@ export class HardcoverApi implements BooksApi {
 		}`;
 		const body = JSON.stringify({ query: gqlQuery, variables: { query } });
 		const data = await apiPost(ENDPOINT, body, { Authorization: `Bearer ${this.token}` });
-		const results: any[] = data?.data?.search?.results ?? [];
-		return results.map((hit) => this.mapBook(hit?.hits?.[0] ?? hit));
+		const results = data?.data?.search?.results;
+		const hits: any[] = results?.hits ?? [];
+		return hits.map((hit) => this.mapBook(hit?.document ?? hit));
 	}
 
 	private mapBook(book: any): Book {
