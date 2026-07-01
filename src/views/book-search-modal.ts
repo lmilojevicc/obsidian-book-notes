@@ -45,9 +45,9 @@ export class BookSearchModal extends Modal {
 				new Notice(`No results found for "${query}"`);
 				return;
 			}
-			this.close();
 			this.resolved = true;
 			this.callback(null, results);
+			this.close();
 		} catch (err) {
 			new Notice(`Search failed: ${(err as Error).message}`);
 			this.resolved = true;
