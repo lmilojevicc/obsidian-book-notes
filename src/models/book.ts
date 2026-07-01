@@ -21,6 +21,7 @@ export interface Book {
 	coverSmallUrl?: string;
 	coverMediumUrl?: string;
 	coverLargeUrl?: string;
+	coverOriginalUrl?: string; // full-resolution original (Open Library: no size suffix); ideal for banners
 
 	// Cover (local — set when enableCoverImageSave is on)
 	localCoverImage?: string;

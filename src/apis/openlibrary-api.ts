@@ -35,6 +35,7 @@ export class OpenLibraryApi implements BooksApi {
 			coverMediumUrl: coverId ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg` : undefined,
 			coverSmallUrl: coverId ? `https://covers.openlibrary.org/b/id/${coverId}-S.jpg` : undefined,
 			coverUrl: coverId ? `https://covers.openlibrary.org/b/id/${coverId}-L.jpg` : undefined,
+			coverOriginalUrl: coverId ? `https://covers.openlibrary.org/b/id/${coverId}.jpg` : undefined,
 			isbn: isbn13 || isbn10,
 			isbn10,
 			isbn13,

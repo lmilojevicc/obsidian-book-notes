@@ -39,6 +39,7 @@ export class HardcoverApi implements BooksApi {
 			totalPage: book.pages ?? undefined,
 			coverLargeUrl: coverUrl || undefined,
 			coverUrl: coverUrl || undefined,
+			coverOriginalUrl: coverUrl || undefined,
 			isbn: isbn13 || isbn10,
 			isbn10,
 			isbn13,

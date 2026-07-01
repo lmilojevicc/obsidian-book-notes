@@ -59,8 +59,12 @@ export class BookSuggestModal extends SuggestModal<Book> {
 
 	onClose(): void {
 		if (!this.resolved) {
-			this.resolved = true;
-			this.callback(null);
+			// Obsidian fires onClose BEFORE onChooseSuggestion on selection, so we must
+			// defer the cancel-resolution to the next tick to give onChooseSuggestion
+			// a chance to set `resolved` first. A real cancel (Esc) has no pending pick.
+			window.setTimeout(() => {
+				if (!this.resolved) this.callback(null);
+			}, 0);
 		}
 	}
 }

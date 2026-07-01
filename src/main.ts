@@ -52,7 +52,9 @@ export default class BookNotesPlugin extends Plugin {
 					this.app,
 					results,
 					this.settings.showCoverImageInSearch,
-					(book) => resolve(book),
+					(book) => {
+						resolve(book);
+					},
 				).open();
 			}).open();
 		});
@@ -88,12 +90,13 @@ export default class BookNotesPlugin extends Plugin {
 	}
 
 	async createNewBookNote() {
-		const book = await this.searchAndPick();
-		if (!book) return;
+		try {
+			const book = await this.searchAndPick();
+			if (!book) return;
 
-		const content = await this.getRenderedContent(book);
-		const fileName = makeFileName(book, this.settings.fileNameFormat);
-		const folder = this.settings.folder || '';
+			const content = await this.getRenderedContent(book);
+			const fileName = makeFileName(book, this.settings.fileNameFormat);
+			const folder = this.settings.folder || '';
 
 		// Ensure folder exists
 		const folderPath = folder ? folder.replace(/^\/+|\/+$/g, '') : '';
@@ -109,35 +112,43 @@ export default class BookNotesPlugin extends Plugin {
 		let finalPath = basePath;
 		let counter = 1;
 		while (this.app.vault.getAbstractFileByPath(finalPath)) {
-			const suffix = folderPath
+			finalPath = folderPath
 				? `${folderPath}/${fileName}-${counter}.md`
 				: `${fileName}-${counter}.md`;
-			finalPath = suffix;
 			counter++;
 		}
 
-		const file = await this.app.vault.create(finalPath, content);
+			const file = await this.app.vault.create(finalPath, content);
 
-		if (this.settings.openPageOnCompletion) {
-			await this.app.workspace.openLinkText(file.path, '', false);
+			if (this.settings.openPageOnCompletion) {
+				await this.app.workspace.openLinkText(file.path, '', false);
+			}
+
+			new Notice(`Created ${file.name}`);
+		} catch (err) {
+			console.error('Book Notes: createNewBookNote failed', err);
+			new Notice(`Book Notes error: ${(err as Error).message}`);
 		}
-
-		new Notice(`Created ${file.name}`);
 	}
 
 	async insertMetadata() {
-		const book = await this.searchAndPick();
-		if (!book) return;
+		try {
+			const book = await this.searchAndPick();
+			if (!book) return;
 
-		const content = await this.getRenderedContent(book);
+			const content = await this.getRenderedContent(book);
 
-		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-		if (view) {
-			const editor = view.editor;
-			editor.replaceRange(content, { line: 0, ch: 0 });
-			new Notice('Book metadata inserted.');
-		} else {
-			new Notice('No active note to insert into.');
+			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+			if (view) {
+				const editor = view.editor;
+				editor.replaceRange(content, { line: 0, ch: 0 });
+				new Notice('Book metadata inserted.');
+			} else {
+				new Notice('No active note to insert into.');
+			}
+		} catch (err) {
+			console.error('Book Notes: insertMetadata failed', err);
+			new Notice(`Book Notes error: ${(err as Error).message}`);
 		}
 	}
 }

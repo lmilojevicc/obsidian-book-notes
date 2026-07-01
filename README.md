@@ -18,41 +18,75 @@ Alternatively, run **"Book Notes: Insert book metadata"** to insert the rendered
 
 ## Template variables
 
-Every book field is available as a `{{fieldName}}` token, interpolated across the whole note (frontmatter and body):
+Every book field is available as a `{{fieldName}}` token, interpolated across the whole note (frontmatter and body). Unknown tokens are replaced with an empty string.
 
-| Variable | Notes |
-|---|---|
-| `{{title}}`, `{{subtitle}}` | |
-| `{{author}}` | Comma-joined string. |
-| `{{authors}}` | Array — stringified as a comma-joined list. |
-| `{{category}}`, `{{categories}}` | Same duality as author/authors. |
-| `{{publisher}}`, `{{publishDate}}` | |
-| `{{totalPage}}` | |
-| `{{coverUrl}}` | Remote cover URL. |
-| `{{coverSmallUrl}}`, `{{coverMediumUrl}}`, `{{coverLargeUrl}}` | |
-| `{{localCoverImage}}` | Vault path; only set when "Download cover image to vault" is enabled. |
-| `{{isbn}}`, `{{isbn10}}`, `{{isbn13}}` | |
-| `{{description}}` | Open Library search does not populate this; Hardcover does. |
-| `{{link}}` | |
-| `{{rating}}`, `{{ratingsCount}}`, `{{genres}}`, `{{series}}` | Hardcover enrichment. |
-| `{{DATE}}`, `{{DATE:YYYY-MM-DD}}` | Current date (configurable format). |
-| `{{asin}}` | Hardcover only. |
+### Complete variable reference
 
-Unknown tokens are replaced with an empty string.
+| Variable | Source | Description |
+|---|---|---|
+| `{{title}}` | both | Book title. |
+| `{{subtitle}}` | both | Subtitle (often empty from Open Library search). |
+| `{{author}}` | both | Authors as a comma-joined string, e.g. `Frank Herbert, Brian Herbert`. |
+| `{{authors}}` | both | Authors array — renders as a comma-joined string (use for lists in templates). |
+| `{{category}}` | both | Top categories/genres as a comma-joined string. |
+| `{{categories}}` | both | Categories/genres array — renders as a comma-joined string. |
+| `{{publisher}}` | both | Publisher (Open Library: first publisher; Hardcover: empty from search). |
+| `{{publishDate}}` | both | Publication year, e.g. `1965`. |
+| `{{totalPage}}` | both | Page count (Open Library: median across editions). |
+| `{{coverUrl}}` | both | Display-size cover URL (~500px). Best for inline `![](...)` embeds. |
+| `{{coverSmallUrl}}` | Open Library | Small thumbnail (~80px). |
+| `{{coverMediumUrl}}` | Open Library | Medium thumbnail (~200px). |
+| `{{coverLargeUrl}}` | both | Large cover URL (Open Library ~500px; Hardcover same as coverUrl). |
+| `{{coverOriginalUrl}}` | both | **Full-resolution original** cover. On Open Library this is the un-capped original image — ideal for banners. On Hardcover this is the best available from search (~500px). |
+| `{{localCoverImage}}` | both | Vault path of the downloaded cover; only set when "Download cover image to vault" is enabled. |
+| `{{isbn}}` | both | ISBN-13 if available, otherwise ISBN-10. |
+| `{{isbn10}}` | both | ISBN-10. |
+| `{{isbn13}}` | both | ISBN-13. |
+| `{{asin}}` | Hardcover | Amazon ASIN (Hardcover only; not populated from search). |
+| `{{link}}` | both | URL to the book page on the backend (Open Library works link / Hardcover book link). |
+| `{{description}}` | both | Book description. Populated by Hardcover; Open Library search does not include it. |
+| `{{rating}}` | Hardcover | Average rating (e.g. `4.32`). |
+| `{{ratingsCount}}` | Hardcover | Number of ratings. |
+| `{{genres}}` | Hardcover | Genres array — renders as a comma-joined string. |
+| `{{series}}` | Hardcover | Series names array — renders as a comma-joined string. |
+| `{{status}}` | — | Never populated by the API; present for user-editable tracking in custom templates. |
+
+### Cover image tiers
+
+There are several cover variables at different resolutions. Pick the one that matches your use case:
+
+- **`{{coverUrl}}`** — display size (~500px). Use for the inline cover embed in the note body: `![cover|200]({{coverUrl}})`.
+- **`{{coverSmallUrl}}`** / **`{{coverMediumUrl}}`** / **`{{coverLargeUrl}}`** — explicit thumbnail/large sizes from Open Library.
+- **`{{coverOriginalUrl}}`** — full-resolution original. Use for a **banner** frontmatter field so banner plugins (e.g. Banners) can render a crisp hero image. On Open Library this returns the uncapped original; on Hardcover it falls back to the best available search image (~500px).
+
+### Date tokens
+
+- **`{{DATE}}`** — the current date, formatted `YYYY-MM-DD`.
+- **`{{DATE:FORMAT}}`** — the current date with a custom [moment.js](https://momentjs.com/docs/#/displaying/format/) format, e.g. `{{DATE:YYYY-MM-DD HH:mm:ss}}`.
+
+Date tokens also work in the **file name format** setting (e.g. `{{title}} - {{DATE}}`).
+
+### Array fields
+
+Fields stored as arrays (`{{authors}}`, `{{categories}}`, `{{genres}}`, `{{series}}`) render as a **comma-joined string** when interpolated directly. There is no inline-script/loop support; if you need a YAML list or wikilinks, format the value in your template accordingly.
 
 ### YAML safety
 
-When using template variables inside frontmatter, quote string values (e.g. `title: "{{title}}"`) to avoid YAML corruption from titles containing colons or special characters. The built-in default template already does this.
+When using template variables inside frontmatter, **quote string values** (e.g. `title: "{{title}}"`) to avoid YAML corruption from titles containing colons or special characters. The built-in default template already does this.
 
 ### Example template
+
+A template using a full-res banner, a display cover, and common metadata:
 
 ```markdown
 ---
 title: "{{title}}"
 author: "{{author}}"
-publisher: {{publisher}}
-publishDate: {{publishDate}}
-cover: {{coverUrl}}
+publisher: "{{publisher}}"
+publishDate: "{{publishDate}}"
+isbn: "{{isbn}}"
+cover: "{{coverUrl}}"
+banner: "{{coverOriginalUrl}}"
 status: unread
 created: {{DATE:YYYY-MM-DD}}
 ---
