@@ -1,0 +1,10 @@
+{
+	"id": "book-notes",
+	"name": "Book Notes",
+	"version": "1.0.0",
+	"minAppVersion": "1.4.10",
+	"description": "Search books via Open Library or Hardcover and create templated notes.",
+	"author": "Your Name",
+	"authorUrl": "https://example.com",
+	"isDesktopOnly": false
+}
