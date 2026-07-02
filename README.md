@@ -1,128 +1,106 @@
 # Book Notes
 
-An [Obsidian](https://obsidian.md) plugin to search for books and create templated notes with book metadata. A re-implementation of [obsidian-book-search-plugin](https://github.com/anpigon/obsidian-book-search-plugin)'s UX using more reliable backends.
+An [Obsidian](https://obsidian.md) plugin to search for books (via Open Library or Hardcover) and create templated notes with interpolated metadata. A re-implementation of [obsidian-book-search-plugin](https://github.com/anpigon/obsidian-book-search-plugin)'s UX using more reliable backends.
 
-## Backends
+## Installation
 
-- **Open Library** (default) — free, no API key required. [openlibrary.org](https://openlibrary.org)
-- **Hardcover** (opt-in) — free, requires a Bearer token generated at [hardcover.app/account/api](https://hardcover.app/account/api).
+1. Copy `main.js`, `manifest.json`, and `styles.css` into `<vault>/.obsidian/plugins/book-notes/`.
+2. Enable **Book Notes** in Settings → Community plugins.
+
+For beta updates, add this repo in [BRAT](https://github.com/TfTHacker/obsidian42-brat).
 
 ## Usage
 
-1. Open the command palette and run **"Book Notes: Create new book note"** (or click the book ribbon icon).
-2. Type a title, author, or ISBN and press Enter / click Search.
-3. Pick a book from the results list.
-4. A note is created from your template with the book metadata interpolated.
+1. Run **"Book Notes: Create new book note"** from the command palette (or click the book ribbon icon).
+2. Search by title, author, or ISBN → pick a book from the results.
+3. A note is created from your template in the configured folder.
 
-Alternatively, run **"Book Notes: Insert book metadata"** to insert the rendered template at the top of the currently open note.
+**"Book Notes: Insert book metadata"** inserts the rendered template at the top of the current note instead.
+
+### Settings
+
+- **Service provider** — Open Library (default, no key) or Hardcover (needs token).
+- **Hardcover API token** — generate at [hardcover.app/account/api](https://hardcover.app/account/api); paste in settings.
+- **New file location** — folder for created notes (default `Books`).
+- **New file name format** — supports `{{title}}`, `{{author}}`, `{{DATE}}`, `{{DATE:FORMAT}}`. Empty = `{{title}} - {{author}}`.
+- **Template file** — path to your template `.md`. Empty = built-in default template.
+- **Show cover images in search** — thumbnails in the results list.
+- **Download cover image to vault** — saves the cover into the vault (uses `{{localCoverImage}}`); otherwise the remote URL is embedded.
+- **Open note after creation** — opens the new note automatically.
+
+## Backends
+
+- **Open Library** (default) — free, no key. Best coverage; English-centric. Search returns work-level data, so `description` is empty and `publishDate` is year-only.
+- **Hardcover** (opt-in) — free, requires a Bearer token. Richer metadata (ratings, genres, series, descriptions).
 
 ## Template variables
 
-Every book field is available as a `{{fieldName}}` token, interpolated across the whole note (frontmatter and body). Unknown tokens are replaced with an empty string.
+Every book field is a `{{fieldName}}` token, interpolated across the whole note (frontmatter and body). Unknown tokens become empty strings.
 
-### Complete variable reference
+### Notes on array and date fields
 
-| Variable | Source | Description |
-|---|---|---|
-| `{{title}}` | both | Book title. |
-| `{{subtitle}}` | both | Subtitle (often empty from Open Library search). |
-| `{{author}}` | both | Authors as a comma-joined string, e.g. `Frank Herbert, Brian Herbert`. |
-| `{{authors}}` | both | Authors array — renders identically to `{{author}}` (comma-joined). |
-| `{{category}}` | both | Top categories/genres as a comma-joined string. |
-| `{{categories}}` | both | Categories/genres array — renders as a comma-joined string. |
-| `{{publisher}}` | both | Publisher (Open Library: first publisher; Hardcover: empty from search). |
-| `{{publishDate}}` | both | Publication year, e.g. `1965`. |
-| `{{totalPage}}` | both | Page count (Open Library: median across editions). |
-| `{{coverUrl}}` | both | Display-size cover URL (~500px). Best for inline `![](...)` embeds. |
-| `{{coverSmallUrl}}` | Open Library | Small thumbnail (~80px). |
-| `{{coverMediumUrl}}` | Open Library | Medium thumbnail (~200px). |
-| `{{coverLargeUrl}}` | both | Large cover URL (Open Library ~500px; Hardcover same as coverUrl). |
-| `{{coverOriginalUrl}}` | both | **Full-resolution original** cover. On Open Library this is the un-capped original image — ideal for banners. On Hardcover this is the best available from search (~500px). |
-| `{{localCoverImage}}` | both | Vault path of the downloaded cover; only set when "Download cover image to vault" is enabled. |
-| `{{isbn}}` | both | ISBN-13 if available, otherwise ISBN-10. |
-| `{{isbn10}}` | both | ISBN-10. |
-| `{{isbn13}}` | both | ISBN-13. |
-| `{{asin}}` | Hardcover | Amazon ASIN (Hardcover only; not populated from search). |
-| `{{link}}` | both | URL to the book page on the backend (Open Library works link / Hardcover book link). |
-| `{{description}}` | both | Book description. Populated by Hardcover; Open Library search does not include it. |
-| `{{rating}}` | Hardcover | Average rating (e.g. `4.32`). |
-| `{{ratingsCount}}` | Hardcover | Number of ratings. |
-| `{{genres}}` | Hardcover | Genres array — renders as a comma-joined string. |
-| `{{series}}` | Hardcover | Series names array — renders as a comma-joined string. |
-| `{{status}}` | — | Never populated by the API; present for user-editable tracking in custom templates. |
+- **Three array shapes** — for multi-value fields (authors, categories, genres, series):
+  - `{{X}}` / `{{author}}` — comma-joined string (e.g. `Frank Herbert, Brian Herbert`). For body text.
+  - `{{XList}}` — YAML block list (e.g. `\n  - Frank Herbert\n  - Brian Herbert`). For frontmatter: `key:{{XList}}` (no space after colon).
+  - `{{XLinkedList}}` — YAML block list of **quoted wikilinks** (e.g. `\n  - "[[Frank Herbert]]"`). Quoting is required so Obsidian's property parser reads them correctly.
+- **Date tokens** — `{{DATE}}` (today, `YYYY-MM-DD`) and `{{DATE:FORMAT}}` with any [moment.js](https://momentjs.com/docs/#/displaying/format/) format. Also work in the file name format setting.
+- **YAML lists require no space after colon**: `authors:{{authorsList}}`, not `authors: {{authorsList}}`. An empty array renders as `key:` (valid YAML null).
 
-### Cover image tiers
+### Complete reference
 
-There are several cover variables at different resolutions. Pick the one that matches your use case:
-
-- **`{{coverUrl}}`** — display size (~500px). Use for the inline cover embed in the note body: `![cover|200]({{coverUrl}})`.
-- **`{{coverSmallUrl}}`** / **`{{coverMediumUrl}}`** / **`{{coverLargeUrl}}`** — explicit thumbnail/large sizes from Open Library.
-- **`{{coverOriginalUrl}}`** — full-resolution original. Use for a **banner** frontmatter field so banner plugins (e.g. Banners) can render a crisp hero image. On Open Library this returns the uncapped original; on Hardcover it falls back to the best available search image (~500px).
-
-### Date tokens
-
-- **`{{DATE}}`** — the current date, formatted `YYYY-MM-DD`.
-- **`{{DATE:FORMAT}}`** — the current date with a custom [moment.js](https://momentjs.com/docs/#/displaying/format/) format, e.g. `{{DATE:YYYY-MM-DD HH:mm:ss}}`.
-
-Date tokens also work in the **file name format** setting (e.g. `{{title}} - {{DATE}}`).
-
-### Array fields
-
-Fields stored as arrays (`{{authors}}`, `{{categories}}`, `{{genres}}`, `{{series}}`) render as a **comma-joined string** when interpolated directly. There is no inline-script/loop support. For YAML block lists, use the pre-formatted `*List` and `*LinkedList` fields below.
-
-### YAML list fields (for frontmatter)
-
-For frontmatter, you often want a **YAML block list** rather than a comma-joined string. The `*List` and `*LinkedList` fields are pre-formatted with a leading newline and `- ` indentation so they form valid YAML block sequences.
-
-Use them as `key:{{fieldName}}` — **no space after the colon**, because the value starts with a newline:
-
-```markdown
----
-authors:{{authorsList}}
-authors_linked:{{authorsLinkedList}}
----
-```
-
-renders as:
-
-```yaml
----
-authors:
-  - Frank Herbert
-  - Brian Herbert
-authors_linked:
-  - "[[Frank Herbert]]"
-  - "[[Brian Herbert]]"
----
-```
-
-The `*LinkedList` items are **quoted** (`"[[...]]"`) so Obsidian's property parser reads them correctly as list-of-links immediately (unquoted `[[...]]` items are misread until manually clicked). The raw `*List` items are unquoted plain text, which is valid YAML.```
-
-| Variable | Source | Description |
-|---|---|---|
-| `{{authorsList}}` | both | Authors as a YAML block list. |
-| `{{authorsLinkedList}}` | both | Authors as a YAML block list of wikilinks. |
-| `{{categoriesList}}` | both | Categories/subjects as a YAML block list. |
-| `{{categoriesLinkedList}}` | both | Categories/subjects as a YAML block list of wikilinks. |
-| `{{genresList}}` | Hardcover | Genres as a YAML block list. |
-| `{{genresLinkedList}}` | Hardcover | Genres as a YAML block list of wikilinks. |
-| `{{seriesList}}` | Hardcover | Series names as a YAML block list. |
-| `{{seriesLinkedList}}` | Hardcover | Series names as a YAML block list of wikilinks. |
-
-An empty array renders as an empty string, producing `key:` (valid YAML null).
-
-### YAML safety
-
-When using template variables inside frontmatter, **quote string values** (e.g. `title: "{{title}}"`) to avoid YAML corruption from titles containing colons or special characters. The built-in default template already does this.
+| Variable                   | Source       | Description                                                                                                |
+| -------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------- |
+| **Identity**               |              |                                                                                                            |
+| `{{title}}`                | both         | Book title.                                                                                                |
+| `{{subtitle}}`             | both         | Subtitle (often empty from Open Library search).                                                           |
+| `{{description}}`          | both         | Book description (Hardcover populates; Open Library search does not).                                      |
+| **Authors**                |              |                                                                                                            |
+| `{{author}}`               | both         | Comma-joined string, e.g. `Frank Herbert, Brian Herbert`.                                                  |
+| `{{authors}}`              | both         | Same as `{{author}}` (array stringified to comma-joined).                                                  |
+| `{{authorsList}}`          | both         | YAML block list of author names.                                                                           |
+| `{{authorsLinkedList}}`    | both         | YAML block list of quoted `[[author]]` wikilinks.                                                          |
+| **Classification**         |              |                                                                                                            |
+| `{{category}}`             | both         | Top categories/genres, comma-joined.                                                                       |
+| `{{categories}}`           | both         | Same as `{{category}}` (array stringified).                                                                |
+| `{{categoriesList}}`       | both         | YAML block list of categories (Open Library subjects, capped at 5).                                        |
+| `{{categoriesLinkedList}}` | both         | YAML block list of quoted `[[category]]` wikilinks.                                                        |
+| `{{genres}}`               | Hardcover    | Genres, comma-joined.                                                                                      |
+| `{{genresList}}`           | Hardcover    | YAML block list of genres.                                                                                 |
+| `{{genresLinkedList}}`     | Hardcover    | YAML block list of quoted `[[genre]]` wikilinks.                                                           |
+| `{{series}}`               | Hardcover    | Series names, comma-joined.                                                                                |
+| `{{seriesList}}`           | Hardcover    | YAML block list of series names.                                                                           |
+| `{{seriesLinkedList}}`     | Hardcover    | YAML block list of quoted `[[series]]` wikilinks.                                                          |
+| **Publication**            |              |                                                                                                            |
+| `{{publisher}}`            | both         | Publisher (Open Library: first; Hardcover: empty from search).                                             |
+| `{{publishDate}}`          | both         | Publication year, e.g. `1965`.                                                                             |
+| `{{totalPage}}`            | both         | Page count (Open Library: median across editions).                                                         |
+| **Covers**                 |              |                                                                                                            |
+| `{{coverUrl}}`             | both         | Display-size cover (~500px). Best for inline `![](...)` embeds.                                            |
+| `{{coverSmallUrl}}`        | Open Library | Small thumbnail (~80px).                                                                                   |
+| `{{coverMediumUrl}}`       | Open Library | Medium thumbnail (~200px).                                                                                 |
+| `{{coverLargeUrl}}`        | both         | Large cover (Open Library ~500px; Hardcover = coverUrl).                                                   |
+| `{{coverOriginalUrl}}`     | both         | Full-resolution original. Open Library: uncapped. Hardcover: ~500px (best from search). Ideal for banners. |
+| `{{localCoverImage}}`      | both         | Vault path of downloaded cover (only if download is enabled).                                              |
+| **Identifiers & links**    |              |                                                                                                            |
+| `{{isbn}}`                 | both         | ISBN-13 if available, else ISBN-10.                                                                        |
+| `{{isbn10}}`               | both         | ISBN-10.                                                                                                   |
+| `{{isbn13}}`               | both         | ISBN-13.                                                                                                   |
+| `{{asin}}`                 | Hardcover    | Amazon ASIN (not populated from search).                                                                   |
+| `{{link}}`                 | both         | URL to the book on the backend.                                                                            |
+| **Hardcover enrichment**   |              |                                                                                                            |
+| `{{rating}}`               | Hardcover    | Average rating, e.g. `4.32`.                                                                               |
+| `{{ratingsCount}}`         | Hardcover    | Number of ratings.                                                                                         |
+| **Other**                  |              |                                                                                                            |
+| `{{status}}`               | —            | Never set by the API; for user tracking in custom templates.                                               |
+| `{{DATE}}`                 | —            | Today's date (`YYYY-MM-DD`).                                                                               |
+| `{{DATE:FORMAT}}`          | —            | Today's date with a custom moment.js format.                                                               |
 
 ### Example template
-
-A template using a full-res banner, a display cover, and common metadata:
 
 ```markdown
 ---
 title: "{{title}}"
-author: "{{author}}"
+author:{{authorsLinkedList}}
 publisher: "{{publisher}}"
 publishDate: "{{publishDate}}"
 isbn: "{{isbn}}"
@@ -139,24 +117,17 @@ created: {{DATE:YYYY-MM-DD}}
 ## Summary
 
 {{description}}
-
-## Notes
-
 ```
 
-## Covers
+## Cover images
 
-By default the cover image is embedded via its remote URL (`{{coverUrl}}`). Enable **"Download cover image to vault"** in settings to save the cover into your vault; the path is then available via `{{localCoverImage}}`. The downloaded image extension is sniffed from the response content type (not hardcoded).
+- `{{coverUrl}}` — display size for inline embeds.
+- `{{coverOriginalUrl}}` — full-res for banner plugins. Open Library returns the uncapped original; Hardcover falls back to ~500px from search.
+- Enable **"Download cover image to vault"** to save the cover locally → use `{{localCoverImage}}` for the vault path. The extension is sniffed from the content type.
 
-## Installation
+## YAML safety
 
-### Manual
-
-Copy `main.js`, `manifest.json`, and `styles.css` into `<vault>/.obsidian/plugins/book-notes/`, then enable the plugin in Settings → Community plugins.
-
-### BRAT
-
-Add this repository in [BRAT](https://github.com/TfTHacker/obsidian42-brat) to install beta releases.
+Quote string frontmatter values (e.g. `title: "{{title}}"`) to avoid corruption from titles containing colons or special characters. For list fields, use `key:{{field}}` with no space after the colon.
 
 ## License
 
