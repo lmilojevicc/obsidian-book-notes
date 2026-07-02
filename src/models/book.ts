@@ -6,10 +6,12 @@ export interface Book {
 	// Authors
 	author: string;       // comma-joined string for easy templating
 	authors: string[];    // array form
+	authorsLinked?: string; // pre-formatted wikilinks, e.g. "[[Author A]], [[Author B]]"
 
 	// Classification
-	category?: string;       // comma-joined
-	categories?: string[];   // array form
+	category?: string;        // comma-joined
+	categories?: string[];    // array form
+	categoriesLinked?: string; // pre-formatted wikilinks, e.g. "[[Fiction]], [[Fantasy]]"
 
 	// Publication
 	publisher?: string;
@@ -40,7 +42,9 @@ export interface Book {
 	rating?: number;
 	ratingsCount?: number;
 	genres?: string[];
+	genresLinked?: string; // pre-formatted wikilinks
 	series?: string[];
+	seriesLinked?: string; // pre-formatted wikilinks
 
 	// User-editable status fields (never populated by API; for user templates)
 	status?: string;

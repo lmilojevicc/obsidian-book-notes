@@ -34,6 +34,7 @@ export class HardcoverApi implements BooksApi {
 			description: book.description ?? '',
 			author: authors.join(', '),
 			authors,
+			authorsLinked: authors.map((a) => `[[${a}]]`).join(', '),
 			publisher: '',  // publisher is on edition, not search results
 			publishDate: book.release_year ? String(book.release_year) : '',
 			totalPage: book.pages ?? undefined,
@@ -47,7 +48,10 @@ export class HardcoverApi implements BooksApi {
 			ratingsCount: book.ratings_count ?? undefined,
 			categories: genres,
 			category: genres.join(', '),
+			categoriesLinked: genres.map((g) => `[[${g}]]`).join(', '),
+			genresLinked: genres.map((g) => `[[${g}]]`).join(', '),
 			series: book.series_names ?? [],
+			seriesLinked: (book.series_names ?? []).map((s: string) => `[[${s}]]`).join(', '),
 			link: book.slug ? `https://hardcover.app/books/${book.slug}` : '',
 		};
 	}
