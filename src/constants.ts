@@ -1,7 +1,7 @@
 export const DEFAULT_TEMPLATE = `---
 title: "{{title}}"
 subtitle: "{{subtitle}}"
-author: "{{authorsLinked}}"
+author:{{authorsLinkedList}}
 publisher: "{{publisher}}"
 publishDate: "{{publishDate}}"
 totalPage: {{totalPage}}

@@ -27,11 +27,9 @@ Every book field is available as a `{{fieldName}}` token, interpolated across th
 | `{{title}}` | both | Book title. |
 | `{{subtitle}}` | both | Subtitle (often empty from Open Library search). |
 | `{{author}}` | both | Authors as a comma-joined string, e.g. `Frank Herbert, Brian Herbert`. |
-| `{{authors}}` | both | Authors array — renders as a comma-joined string (use for lists in templates). |
-| `{{authorsLinked}}` | both | Authors pre-formatted as wikilinks, e.g. `[[Frank Herbert]], [[Brian Herbert]]`. Use directly (no surrounding brackets). |
+| `{{authors}}` | both | Authors array — renders identically to `{{author}}` (comma-joined). |
 | `{{category}}` | both | Top categories/genres as a comma-joined string. |
 | `{{categories}}` | both | Categories/genres array — renders as a comma-joined string. |
-| `{{categoriesLinked}}` | both | Categories/genres pre-formatted as wikilinks, e.g. `[[Fiction]], [[Fantasy]]`. Use directly (no surrounding brackets). |
 | `{{publisher}}` | both | Publisher (Open Library: first publisher; Hardcover: empty from search). |
 | `{{publishDate}}` | both | Publication year, e.g. `1965`. |
 | `{{totalPage}}` | both | Page count (Open Library: median across editions). |
@@ -50,9 +48,7 @@ Every book field is available as a `{{fieldName}}` token, interpolated across th
 | `{{rating}}` | Hardcover | Average rating (e.g. `4.32`). |
 | `{{ratingsCount}}` | Hardcover | Number of ratings. |
 | `{{genres}}` | Hardcover | Genres array — renders as a comma-joined string. |
-| `{{genresLinked}}` | Hardcover | Genres pre-formatted as wikilinks. |
 | `{{series}}` | Hardcover | Series names array — renders as a comma-joined string. |
-| `{{seriesLinked}}` | Hardcover | Series names pre-formatted as wikilinks. |
 | `{{status}}` | — | Never populated by the API; present for user-editable tracking in custom templates. |
 
 ### Cover image tiers
@@ -72,7 +68,7 @@ Date tokens also work in the **file name format** setting (e.g. `{{title}} - {{D
 
 ### Array fields
 
-Fields stored as arrays (`{{authors}}`, `{{categories}}`, `{{genres}}`, `{{series}}`) render as a **comma-joined string** when interpolated directly. There is no inline-script/loop support; if you need wikilinks, use the pre-formatted variants: `{{authorsLinked}}`, `{{categoriesLinked}}`, `{{genresLinked}}`, `{{seriesLinked}}` (each already contains the `[[...]]` brackets). For a YAML list or other custom formatting, format the value in your template accordingly.
+Fields stored as arrays (`{{authors}}`, `{{categories}}`, `{{genres}}`, `{{series}}`) render as a **comma-joined string** when interpolated directly. There is no inline-script/loop support. For YAML block lists, use the pre-formatted `*List` and `*LinkedList` fields below.
 
 ### YAML list fields (for frontmatter)
 
@@ -95,10 +91,12 @@ authors:
   - Frank Herbert
   - Brian Herbert
 authors_linked:
-  - [[Frank Herbert]]
-  - [[Brian Herbert]]
+  - "[[Frank Herbert]]"
+  - "[[Brian Herbert]]"
 ---
 ```
+
+The `*LinkedList` items are **quoted** (`"[[...]]"`) so Obsidian's property parser reads them correctly as list-of-links immediately (unquoted `[[...]]` items are misread until manually clicked). The raw `*List` items are unquoted plain text, which is valid YAML.```
 
 | Variable | Source | Description |
 |---|---|---|
