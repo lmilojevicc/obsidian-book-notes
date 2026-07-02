@@ -91,4 +91,14 @@ author: "Frank Herbert"
 	assert.strictEqual(result, 'Win $& prizes');
 }
 
+// Test 9: yamlBlockList helper (mirrors src/utils/template.ts)
+function yamlBlockList(items) {
+	return items.length ? '\n' + items.map((i) => `  - ${i}`).join('\n') : '';
+}
+{
+	assert.strictEqual(yamlBlockList(['A', 'B']), '\n  - A\n  - B');
+	assert.strictEqual(yamlBlockList([]), '');
+	assert.strictEqual(yamlBlockList(['Single']), '\n  - Single');
+}
+
 console.log('✓ All template engine tests passed');

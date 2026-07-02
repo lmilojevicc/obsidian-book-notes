@@ -1,6 +1,7 @@
 import type { Book } from '../models/book';
 import type { BooksApi } from './books-api';
 import { apiPost } from './books-api';
+import { yamlBlockList } from '../utils/template';
 
 const ENDPOINT = 'https://api.hardcover.app/v1/graphql';
 
@@ -35,6 +36,8 @@ export class HardcoverApi implements BooksApi {
 			author: authors.join(', '),
 			authors,
 			authorsLinked: authors.map((a) => `[[${a}]]`).join(', '),
+			authorsList: yamlBlockList(authors),
+			authorsLinkedList: yamlBlockList(authors.map((a) => `[[${a}]]`)),
 			publisher: '',  // publisher is on edition, not search results
 			publishDate: book.release_year ? String(book.release_year) : '',
 			totalPage: book.pages ?? undefined,
@@ -49,9 +52,15 @@ export class HardcoverApi implements BooksApi {
 			categories: genres,
 			category: genres.join(', '),
 			categoriesLinked: genres.map((g) => `[[${g}]]`).join(', '),
+			categoriesList: yamlBlockList(genres),
+			categoriesLinkedList: yamlBlockList(genres.map((g) => `[[${g}]]`)),
 			genresLinked: genres.map((g) => `[[${g}]]`).join(', '),
+			genresList: yamlBlockList(genres),
+			genresLinkedList: yamlBlockList(genres.map((g) => `[[${g}]]`)),
 			series: book.series_names ?? [],
 			seriesLinked: (book.series_names ?? []).map((s: string) => `[[${s}]]`).join(', '),
+			seriesList: yamlBlockList(book.series_names ?? []),
+			seriesLinkedList: yamlBlockList((book.series_names ?? []).map((s: string) => `[[${s}]]`)),
 			link: book.slug ? `https://hardcover.app/books/${book.slug}` : '',
 		};
 	}

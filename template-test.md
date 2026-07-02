@@ -1,41 +1,45 @@
 ---
 title: "{{title}}"
-author_raw: "{{author}}"
-authors_raw: "{{authors}}"
-authors_linked: "{{authorsLinked}}"
-categories_raw: "{{categories}}"
-categories_linked: "{{categoriesLinked}}"
-genres_raw: "{{genres}}"
-genres_linked: "{{genresLinked}}"
-series_raw: "{{series}}"
-series_linked: "{{seriesLinked}}"
+
+# authors — 4 variants
+author_comma: "{{author}}"
+authors_comma: "{{authors}}"
+authors_list:{{authorsList}}
+authors_linked_comma: "{{authorsLinked}}"
+authors_linked_list:{{authorsLinkedList}}
+
+# categories — 4 variants
+categories_comma: "{{categories}}"
+categories_list:{{categoriesList}}
+categories_linked_comma: "{{categoriesLinked}}"
+categories_linked_list:{{categoriesLinkedList}}
+
+# genres — 4 variants (Hardcover only)
+genres_comma: "{{genres}}"
+genres_list:{{genresList}}
+genres_linked_comma: "{{genresLinked}}"
+genres_linked_list:{{genresLinkedList}}
+
+# series — 4 variants (Hardcover only)
+series_comma: "{{series}}"
+series_list:{{seriesList}}
+series_linked_comma: "{{seriesLinked}}"
+series_linked_list:{{seriesLinkedList}}
 ---
 
 # {{title}}
 
-## author
+## author (comma)
 {{author}}
 
-## authors
+## authors (comma)
 {{authors}}
 
-## authorsLinked
+## authorsList (YAML block)
+{{authorsList}}
+
+## authorsLinked (comma)
 {{authorsLinked}}
 
-## categories
-{{categories}}
-
-## categoriesLinked
-{{categoriesLinked}}
-
-## genres
-{{genres}}
-
-## genresLinked
-{{genresLinked}}
-
-## series
-{{series}}
-
-## seriesLinked
-{{seriesLinked}}
+## authorsLinkedList (YAML block)
+{{authorsLinkedList}}

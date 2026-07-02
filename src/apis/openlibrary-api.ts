@@ -1,6 +1,7 @@
 import type { Book } from '../models/book';
 import type { BooksApi } from './books-api';
 import { apiGet } from './books-api';
+import { yamlBlockList } from '../utils/template';
 
 const SEARCH_URL = 'https://openlibrary.org/search.json';
 const FIELDS = 'key,title,subtitle,author_name,first_publish_year,isbn,number_of_pages_median,cover_i,publisher,subject';
@@ -27,9 +28,13 @@ export class OpenLibraryApi implements BooksApi {
 			author: authors.join(', '),
 			authors,
 			authorsLinked: authors.map((a) => `[[${a}]]`).join(', '),
+			authorsList: yamlBlockList(authors),
+			authorsLinkedList: yamlBlockList(authors.map((a) => `[[${a}]]`)),
 			category: subjects.slice(0, 5).join(', '),
 			categories: subjects.slice(0, 5),
 			categoriesLinked: subjects.slice(0, 5).map((s) => `[[${s}]]`).join(', '),
+			categoriesList: yamlBlockList(subjects.slice(0, 5)),
+			categoriesLinkedList: yamlBlockList(subjects.slice(0, 5).map((s) => `[[${s}]]`)),
 			publisher: doc.publisher?.[0] ?? '',
 			publishDate: doc.first_publish_year ? String(doc.first_publish_year) : '',
 			totalPage: doc.number_of_pages_median ?? undefined,

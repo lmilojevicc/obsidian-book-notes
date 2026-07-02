@@ -74,6 +74,45 @@ Date tokens also work in the **file name format** setting (e.g. `{{title}} - {{D
 
 Fields stored as arrays (`{{authors}}`, `{{categories}}`, `{{genres}}`, `{{series}}`) render as a **comma-joined string** when interpolated directly. There is no inline-script/loop support; if you need wikilinks, use the pre-formatted variants: `{{authorsLinked}}`, `{{categoriesLinked}}`, `{{genresLinked}}`, `{{seriesLinked}}` (each already contains the `[[...]]` brackets). For a YAML list or other custom formatting, format the value in your template accordingly.
 
+### YAML list fields (for frontmatter)
+
+For frontmatter, you often want a **YAML block list** rather than a comma-joined string. The `*List` and `*LinkedList` fields are pre-formatted with a leading newline and `- ` indentation so they form valid YAML block sequences.
+
+Use them as `key:{{fieldName}}` — **no space after the colon**, because the value starts with a newline:
+
+```markdown
+---
+authors:{{authorsList}}
+authors_linked:{{authorsLinkedList}}
+---
+```
+
+renders as:
+
+```yaml
+---
+authors:
+  - Frank Herbert
+  - Brian Herbert
+authors_linked:
+  - [[Frank Herbert]]
+  - [[Brian Herbert]]
+---
+```
+
+| Variable | Source | Description |
+|---|---|---|
+| `{{authorsList}}` | both | Authors as a YAML block list. |
+| `{{authorsLinkedList}}` | both | Authors as a YAML block list of wikilinks. |
+| `{{categoriesList}}` | both | Categories/subjects as a YAML block list. |
+| `{{categoriesLinkedList}}` | both | Categories/subjects as a YAML block list of wikilinks. |
+| `{{genresList}}` | Hardcover | Genres as a YAML block list. |
+| `{{genresLinkedList}}` | Hardcover | Genres as a YAML block list of wikilinks. |
+| `{{seriesList}}` | Hardcover | Series names as a YAML block list. |
+| `{{seriesLinkedList}}` | Hardcover | Series names as a YAML block list of wikilinks. |
+
+An empty array renders as an empty string, producing `key:` (valid YAML null).
+
 ### YAML safety
 
 When using template variables inside frontmatter, **quote string values** (e.g. `title: "{{title}}"`) to avoid YAML corruption from titles containing colons or special characters. The built-in default template already does this.

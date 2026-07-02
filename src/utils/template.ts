@@ -2,6 +2,17 @@ import type { Book } from '../models/book';
 import { moment } from 'obsidian';
 
 /**
+ * Format an array of strings as a YAML block list string.
+ * Empty array → '' (renders as `key:` = valid YAML null).
+ * Non-empty → leading '\n' then '  - item' per line.
+ * Use in templates as `key:{{fieldName}}` (NO space after the colon) so the
+ * leading newline forms the indented list.
+ */
+export function yamlBlockList(items: string[]): string {
+	return items.length ? '\n' + items.map((i) => `  - ${i}`).join('\n') : '';
+}
+
+/**
  * Render a template string by replacing {{var}} tokens.
  * Pass 1: {{DATE}} and {{DATE:format}} date tokens.
  * Pass 2: every Book field → {{fieldName}}. Arrays joined with ', '.
