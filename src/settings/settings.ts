@@ -1,8 +1,10 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import type BookNotesPlugin from '../main';
 import { FileSuggest, FolderSuggest } from './suggesters';
+import { PROVIDERS, getProvider } from '../apis/registry';
 
-export type ServiceProvider = 'openlibrary' | 'hardcover';
+// Derived from PROVIDERS so adding a provider automatically extends the type.
+export type ServiceProvider = typeof PROVIDERS[number]['id'];
 
 export interface BookNotesSettings {
 	serviceProvider: ServiceProvider;
@@ -40,30 +42,32 @@ export class BookNotesSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		// 1. Service provider dropdown
+		// 1. Service provider dropdown (built from PROVIDERS registry)
 		new Setting(containerEl)
 			.setName('Service provider')
 			.setDesc('Choose the book search backend.')
-			.addDropdown((d) =>
-				d.addOption('openlibrary', 'Open Library (free, no key)')
-				 .addOption('hardcover', 'Hardcover (free, requires token)')
-				 .setValue(this.plugin.settings.serviceProvider)
+			.addDropdown((d) => {
+				PROVIDERS.forEach((p) => d.addOption(p.id, p.label));
+				d.setValue(this.plugin.settings.serviceProvider)
 				 .onChange(async (v) => {
 					 this.plugin.settings.serviceProvider = v as ServiceProvider;
 					 await this.plugin.saveSettings();
 					 this.display(); // re-render to show/hide token field
-				 }));
+				 });
+			});
 
-		// 2. Hardcover token (shown only when provider is hardcover)
-		if (this.plugin.settings.serviceProvider === 'hardcover') {
+		// 2. Token field (generic — shown only when the selected provider needs one)
+		const def = getProvider(this.plugin.settings.serviceProvider);
+		if (def?.needsToken && def.tokenSettingKey) {
+			const tokenKey = def.tokenSettingKey;
 			new Setting(containerEl)
-				.setName('Hardcover API token')
-				.setDesc('Generate at https://hardcover.app/account/api')
+				.setName(`${def.label} token`)
+				.setDesc(def.tokenHelpUrl ? `Generate at ${def.tokenHelpUrl}` : 'API token')
 				.addText((t) =>
-					t.setPlaceholder('Bearer token')
-					 .setValue(this.plugin.settings.hardcoverToken)
+					t.setPlaceholder('Token')
+					 .setValue(this.plugin.settings[tokenKey] as string)
 					 .onChange(async (v) => {
-						 this.plugin.settings.hardcoverToken = v.trim();
+						(this.plugin.settings as any)[tokenKey] = v.trim();
 						 await this.plugin.saveSettings();
 					 }));
 		}

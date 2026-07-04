@@ -1,6 +1,6 @@
 import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
 import { BookNotesSettings, DEFAULT_SETTINGS, BookNotesSettingTab } from './settings/settings';
-import { factoryApi } from './apis/books-api';
+import { factoryApi } from './apis/registry';
 import type { BooksApi } from './apis/books-api';
 import { BookSearchModal } from './views/book-search-modal';
 import { BookSuggestModal } from './views/book-suggest-modal';
