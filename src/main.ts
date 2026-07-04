@@ -1,6 +1,7 @@
 import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
 import { BookNotesSettings, DEFAULT_SETTINGS, BookNotesSettingTab } from './settings/settings';
 import { factoryApi } from './apis/books-api';
+import type { BooksApi } from './apis/books-api';
 import { BookSearchModal } from './views/book-search-modal';
 import { BookSuggestModal } from './views/book-suggest-modal';
 import { renderTemplate } from './utils/template';
@@ -44,19 +45,38 @@ export default class BookNotesPlugin extends Plugin {
 
 	private async searchAndPick(): Promise<Book | null> {
 		const api = factoryApi(this.settings);
+		let lastQuery = '';
 
-		return new Promise<Book | null>((resolve) => {
-			new BookSearchModal(this.app, api, (error, results) => {
+		while (true) {
+			// Run the search modal. Returns {books, query} on success, null if user
+			// cancels at the search step (true abandon).
+			const searchResult = await this.runSearchModal(api, lastQuery);
+			if (!searchResult) return null;
+
+			lastQuery = searchResult.query;
+			const picked = await this.runSuggestModal(searchResult.books);
+			if (picked) return picked; // chose a book → done
+			// picked null → user Esc'd the picker → loop back to search modal
+		}
+	}
+
+	private runSearchModal(api: BooksApi, initialQuery: string): Promise<{ books: Book[]; query: string } | null> {
+		return new Promise((resolve) => {
+			new BookSearchModal(this.app, api, initialQuery, (error, results, query) => {
 				if (error || !results.length) { resolve(null); return; }
-				new BookSuggestModal(
-					this.app,
-					results,
-					this.settings.showCoverImageInSearch,
-					(book) => {
-						resolve(book);
-					},
-				).open();
+				resolve({ books: results, query });
 			}).open();
+		});
+	}
+
+	private runSuggestModal(books: Book[]): Promise<Book | null> {
+		return new Promise<Book | null>((resolve) => {
+			new BookSuggestModal(
+				this.app,
+				books,
+				this.settings.showCoverImageInSearch,
+				(book) => resolve(book),
+			).open();
 		});
 	}
 

@@ -9,7 +9,8 @@ export class BookSearchModal extends Modal {
 	constructor(
 		app: App,
 		private api: BooksApi,
-		private callback: (error: Error | null, results: Book[]) => void,
+		private initialQuery: string,
+		private callback: (error: Error | null, results: Book[], query: string) => void,
 	) {
 		super(app);
 	}
@@ -23,6 +24,9 @@ export class BookSearchModal extends Modal {
 		const input = new TextComponent(contentEl)
 			.setPlaceholder('Search by title, author, or ISBN');
 		input.inputEl.addClass('book-search-input');
+		if (this.initialQuery) {
+			input.setValue(this.initialQuery);
+		}
 
 		let searchBtn: ButtonComponent | null = null;
 		new Setting(contentEl)
@@ -58,12 +62,12 @@ export class BookSearchModal extends Modal {
 				return;
 			}
 			this.resolved = true;
-			this.callback(null, results);
+			this.callback(null, results, query);
 			this.close();
 		} catch (err) {
 			new Notice(`Search failed: ${(err as Error).message}`);
 			this.resolved = true;
-			this.callback(err as Error, []);
+			this.callback(err as Error, [], query);
 		} finally {
 			this.busy = false;
 			this.setBusy(btn, false);
@@ -73,7 +77,7 @@ export class BookSearchModal extends Modal {
 	onClose() {
 		if (!this.resolved) {
 			this.resolved = true;
-			this.callback(null, []);
+			this.callback(null, [], '');
 		}
 		this.contentEl.empty();
 	}

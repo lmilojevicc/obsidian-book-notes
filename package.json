@@ -6,7 +6,7 @@
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-		"test": "node --experimental-vm-modules src/utils/template.test.mjs"
+		"test": "node --experimental-vm-modules src/utils/template.test.mjs && node --experimental-vm-modules src/utils/filename.test.mjs && node --experimental-vm-modules src/apis/mappers.test.mjs"
 	},
 	"devDependencies": {
 		"@types/node": "^22.15.17",
