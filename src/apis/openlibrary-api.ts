@@ -2,11 +2,12 @@ import type { Book } from '../models/book';
 import type { BooksApi } from './books-api';
 import { apiGet } from './books-api';
 import { yamlBlockList } from '../utils/template';
+import type { OpenLibraryDoc, OpenLibrarySearchResponse } from './responses';
 
 const SEARCH_URL = 'https://openlibrary.org/search.json';
 const FIELDS = 'key,title,subtitle,author_name,first_publish_year,isbn,number_of_pages_median,cover_i,publisher,subject';
 
-export function mapOpenLibraryDoc(doc: any): Book {
+export function mapOpenLibraryDoc(doc: OpenLibraryDoc): Book {
 	const authors: string[] = doc.author_name ?? [];
 	const subjects: string[] = doc.subject ?? [];
 	const isbns: string[] = doc.isbn ?? [];
@@ -43,8 +44,8 @@ export function mapOpenLibraryDoc(doc: any): Book {
 export class OpenLibraryApi implements BooksApi {
 	async getByQuery(query: string): Promise<Book[]> {
 		const url = `${SEARCH_URL}?q=${encodeURIComponent(query)}&fields=${FIELDS}&limit=20`;
-		const data = await apiGet(url);
-		const docs: any[] = data.docs ?? [];
+		const data = await apiGet<OpenLibrarySearchResponse>(url);
+		const docs = data.docs ?? [];
 		return docs.map((doc) => mapOpenLibraryDoc(doc));
 	}
 }

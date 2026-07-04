@@ -47,12 +47,15 @@ export class BookNotesSettingTab extends PluginSettingTab {
 			.setName('Service provider')
 			.setDesc('Choose the book search backend.')
 			.addDropdown((d) => {
-				PROVIDERS.forEach((p) => d.addOption(p.id, p.label));
+				PROVIDERS.forEach((p) => { d.addOption(p.id, p.label); });
 				d.setValue(this.plugin.settings.serviceProvider)
-				 .onChange(async (v) => {
-					 this.plugin.settings.serviceProvider = v as ServiceProvider;
-					 await this.plugin.saveSettings();
-					 this.display(); // re-render to show/hide token field
+				 .onChange((v: string) => {
+					 const providerId = PROVIDERS.find((p) => p.id === v)?.id;
+					 if (providerId) {
+						 this.plugin.settings.serviceProvider = providerId;
+						 void this.plugin.saveSettings();
+						 this.display(); // re-render to show/hide token field
+					 }
 				 });
 			});
 
@@ -66,9 +69,9 @@ export class BookNotesSettingTab extends PluginSettingTab {
 				.addText((t) =>
 					t.setPlaceholder('Token')
 					 .setValue(this.plugin.settings[tokenKey] as string)
-					 .onChange(async (v) => {
-						(this.plugin.settings as any)[tokenKey] = v.trim();
-						 await this.plugin.saveSettings();
+					 .onChange((v) => {
+						(this.plugin.settings as unknown as Record<string, unknown>)[tokenKey] = v.trim();
+						 void this.plugin.saveSettings();
 					 }));
 		}
 
@@ -79,9 +82,9 @@ export class BookNotesSettingTab extends PluginSettingTab {
 			.addText((t) => {
 				t.setPlaceholder('Books')
 				 .setValue(this.plugin.settings.folder)
-				 .onChange(async (v) => {
+				 .onChange((v) => {
 					 this.plugin.settings.folder = v.trim();
-					 await this.plugin.saveSettings();
+					 void this.plugin.saveSettings();
 				 });
 				new FolderSuggest(this.app, t.inputEl);
 			});
@@ -93,9 +96,9 @@ export class BookNotesSettingTab extends PluginSettingTab {
 			.addText((t) =>
 				t.setPlaceholder('{{title}} - {{author}}')
 				 .setValue(this.plugin.settings.fileNameFormat)
-				 .onChange(async (v) => {
+				 .onChange((v) => {
 					 this.plugin.settings.fileNameFormat = v;
-					 await this.plugin.saveSettings();
+					 void this.plugin.saveSettings();
 				 }));
 
 		// 5. Template file (FileSuggest)
@@ -105,9 +108,9 @@ export class BookNotesSettingTab extends PluginSettingTab {
 			.addText((t) => {
 				t.setPlaceholder('Templates/Book Template.md')
 				 .setValue(this.plugin.settings.templateFile)
-				 .onChange(async (v) => {
+				 .onChange((v) => {
 					 this.plugin.settings.templateFile = v.trim();
-					 await this.plugin.saveSettings();
+					 void this.plugin.saveSettings();
 				 });
 				new FileSuggest(this.app, t.inputEl);
 			});
@@ -117,9 +120,9 @@ export class BookNotesSettingTab extends PluginSettingTab {
 			.setName('Show cover images in search')
 			.addToggle((tg) =>
 				tg.setValue(this.plugin.settings.showCoverImageInSearch)
-				  .onChange(async (v) => {
+				  .onChange((v) => {
 					  this.plugin.settings.showCoverImageInSearch = v;
-					  await this.plugin.saveSettings();
+					  void this.plugin.saveSettings();
 				  }));
 
 		// 7. Enable cover download
@@ -128,9 +131,9 @@ export class BookNotesSettingTab extends PluginSettingTab {
 			.setDesc('If off, cover URL is embedded directly. If on, cover is saved to vault.')
 			.addToggle((tg) =>
 				tg.setValue(this.plugin.settings.enableCoverImageSave)
-				  .onChange(async (v) => {
+				  .onChange((v) => {
 					  this.plugin.settings.enableCoverImageSave = v;
-					  await this.plugin.saveSettings();
+					  void this.plugin.saveSettings();
 				  }));
 
 		// 8. Cover image path (shown only when download is enabled)
@@ -141,9 +144,9 @@ export class BookNotesSettingTab extends PluginSettingTab {
 				.addText((t) => {
 					t.setPlaceholder('Assets/covers')
 					 .setValue(this.plugin.settings.coverImagePath)
-					 .onChange(async (v) => {
+					 .onChange((v) => {
 						 this.plugin.settings.coverImagePath = v.trim();
-						 await this.plugin.saveSettings();
+						 void this.plugin.saveSettings();
 					 });
 					new FolderSuggest(this.app, t.inputEl);
 				});
@@ -154,9 +157,9 @@ export class BookNotesSettingTab extends PluginSettingTab {
 			.setName('Open note after creation')
 			.addToggle((tg) =>
 				tg.setValue(this.plugin.settings.openPageOnCompletion)
-				  .onChange(async (v) => {
+				  .onChange((v) => {
 					  this.plugin.settings.openPageOnCompletion = v;
-					  await this.plugin.saveSettings();
+					  void this.plugin.saveSettings();
 				  }));
 	}
 }

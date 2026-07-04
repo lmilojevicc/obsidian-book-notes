@@ -22,7 +22,7 @@ export function renderTemplate(text: string, book: Book): string {
 	if (!text?.trim()) return '';
 
 	// Pass 1: Date tokens — {{DATE}} or {{DATE:YYYY-MM-DD}}
-	let result = text.replace(/\{\{\s*DATE\s*(:([^}]+))?\s*\}\}/gi, (_, _colon, format) => {
+	let result = text.replace(/\{\{\s*DATE\s*(:([^}]+))?\s*\}\}/gi, (_match: string, _colon: string | undefined, format: string | undefined) => {
 		return moment().format(format?.trim() || 'YYYY-MM-DD');
 	});
 
@@ -32,7 +32,9 @@ export function renderTemplate(text: string, book: Book): string {
 		let replacement = '';
 		if (Array.isArray(val)) {
 			replacement = val.join(', ');
-		} else if (val != null) {
+		} else if (typeof val === 'string') {
+			replacement = val;
+		} else if (typeof val === 'number' || typeof val === 'boolean') {
 			replacement = String(val);
 		}
 		result = result.replace(new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'ig'), () => replacement);

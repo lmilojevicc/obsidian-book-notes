@@ -2,14 +2,15 @@ import type { Book } from '../models/book';
 import type { BooksApi } from './books-api';
 import { apiPost } from './books-api';
 import { yamlBlockList } from '../utils/template';
+import type { HardcoverDocument, HardcoverResponse } from './responses';
 
 const ENDPOINT = 'https://api.hardcover.app/v1/graphql';
 
-export function mapHardcoverDocument(book: any): Book {
+export function mapHardcoverDocument(book: HardcoverDocument): Book {
 	const authors: string[] = book.author_names ?? [];
 	const isbns: string[] = book.isbns ?? [];
-	const isbn13 = isbns.find((i: string) => i.length === 13) ?? '';
-	const isbn10 = isbns.find((i: string) => i.length === 10) ?? '';
+	const isbn13 = isbns.find((i) => i.length === 13) ?? '';
+	const isbn10 = isbns.find((i) => i.length === 10) ?? '';
 	const genres: string[] = book.genres ?? [];
 	const coverUrl = book.image?.url ?? '';
 
@@ -41,7 +42,7 @@ export function mapHardcoverDocument(book: any): Book {
 		genresLinkedList: yamlBlockList(genres.map((g) => `"[[${g}]]"`)),
 		series: book.series_names ?? [],
 		seriesList: yamlBlockList(book.series_names ?? []),
-		seriesLinkedList: yamlBlockList((book.series_names ?? []).map((s: string) => `"[[${s}]]"`)),
+		seriesLinkedList: yamlBlockList((book.series_names ?? []).map((s) => `"[[${s}]]"`)),
 		link: book.slug ? `https://hardcover.app/books/${book.slug}` : '',
 	};
 }
@@ -56,9 +57,9 @@ export class HardcoverApi implements BooksApi {
 			}
 		}`;
 		const body = JSON.stringify({ query: gqlQuery, variables: { query } });
-		const data = await apiPost(ENDPOINT, body, { Authorization: `Bearer ${this.token}` });
+		const data = await apiPost<HardcoverResponse>(ENDPOINT, body, { Authorization: `Bearer ${this.token}` });
 		const results = data?.data?.search?.results;
-		const hits: any[] = results?.hits ?? [];
-		return hits.map((hit) => mapHardcoverDocument(hit?.document ?? hit));
+		const hits = results?.hits ?? [];
+		return hits.map((hit) => mapHardcoverDocument(hit?.document ?? {}));
 	}
 }
