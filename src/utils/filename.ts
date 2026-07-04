@@ -1,5 +1,5 @@
 import type { Book } from '../models/book';
-import { moment } from 'obsidian';
+import { replaceDateTokens } from './template';
 
 export function sanitizeFileName(text: string): string {
 	return text
@@ -12,9 +12,7 @@ export function makeFileName(book: Book, format: string): string {
 	const template = format?.trim() || '{{title}} - {{author}}';
 
 	// Resolve {{DATE}} / {{DATE:format}}
-	let name = template.replace(/\{\{\s*DATE\s*(:([^}]+))?\s*\}\}/gi, (_match: string, _colon: string, fmt: string | undefined) => {
-		return moment().format(fmt?.trim() || 'YYYY-MM-DD');
-	});
+	let name = replaceDateTokens(template);
 
 	// Resolve book fields
 	const author = book.author || '';

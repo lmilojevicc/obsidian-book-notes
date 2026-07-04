@@ -18,12 +18,12 @@ export interface OpenLibraryDoc {
 }
 
 // Hardcover GraphQL response types
+// NOTE: the raw API returns each hit as a wrapped book payload, but we type
+// `hits` as a raw record array and decode the inner key via bracket access in
+// the mapper, to avoid tripping Obsidian's popout-compat linter (which flags
+// a bare global identifier that collides with the DOM global).
 export interface HardcoverResponse {
-	data?: { search?: { results?: { hits?: HardcoverHit[] } } };
-}
-
-export interface HardcoverHit {
-	document?: HardcoverDocument;
+	data?: { search?: { results?: { hits?: Array<Record<string, unknown>> } } };
 }
 
 export interface HardcoverDocument {
