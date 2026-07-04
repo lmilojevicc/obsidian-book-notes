@@ -1,0 +1,59 @@
+name: Release
+
+# Builds main.js + manifest.json + styles.css and attaches them as release
+# assets when a version tag is pushed. This is how Obsidian's community plugin
+# store and BRAT install the plugin — from release assets, NOT the main branch.
+#
+# Release flow:
+#   1. Bump "version" in manifest.json AND package.json (keep in sync).
+#   2. Add the new version to versions.json: { "<version>": "<minAppVersion>" }.
+#   3. git tag <version> && git push origin <version>   (no 'v' prefix)
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify build output
+        run: test -f main.js
+
+      # sanity: the tag must match the manifest version
+      - name: Verify tag matches manifest version
+        run: |
+          set -e
+          MANIFEST_VERSION=$(node -p "require('./manifest.json').version")
+          TAG="${GITHUB_REF#refs/tags/}"
+          if [ "$MANIFEST_VERSION" != "$TAG" ]; then
+            echo "Tag '$TAG' does not match manifest version '$MANIFEST_VERSION'"
+            exit 1
+          fi
+          echo "Tag '$TAG' matches manifest version ✓"
+
+      - name: Create/update GitHub release and attach assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          TAG="${GITHUB_REF#refs/tags/}"
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --generate-notes \
+            main.js manifest.json styles.css
