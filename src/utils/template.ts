@@ -13,6 +13,26 @@ export function yamlBlockList(items: string[]): string {
 }
 
 /**
+ * Replace {{DATE}} and {{DATE:format}} tokens with the current date.
+ * Uses matchAll + manual rebuild so all capture-group values are fully typed
+ * (avoids String.replace's loose callback param typing).
+ */
+export function replaceDateTokens(text: string): string {
+	const regex = /\{\{\s*DATE\s*(:([^}]+))?\s*\}\}/gi;
+	let result = '';
+	let lastIndex = 0;
+	for (const m of text.matchAll(regex)) {
+		const start = m.index ?? 0;
+		const matched = m[0] ?? '';
+		result += text.slice(lastIndex, start);
+		const format = (m[2] ?? '').trim() || 'YYYY-MM-DD';
+		result += moment().format(format);
+		lastIndex = start + matched.length;
+	}
+	return result + text.slice(lastIndex);
+}
+
+/**
  * Render a template string by replacing {{var}} tokens.
  * Pass 1: {{DATE}} and {{DATE:format}} date tokens.
  * Pass 2: every Book field → {{fieldName}}. Arrays joined with ', '.
@@ -22,9 +42,7 @@ export function renderTemplate(text: string, book: Book): string {
 	if (!text?.trim()) return '';
 
 	// Pass 1: Date tokens — {{DATE}} or {{DATE:YYYY-MM-DD}}
-	let result = text.replace(/\{\{\s*DATE\s*(:([^}]+))?\s*\}\}/gi, (_match: string, _colon: string | undefined, format: string | undefined) => {
-		return moment().format(format?.trim() || 'YYYY-MM-DD');
-	});
+	let result = replaceDateTokens(text);
 
 	// Pass 2: Book fields
 	const entries = Object.entries(book) as [string, unknown][];
