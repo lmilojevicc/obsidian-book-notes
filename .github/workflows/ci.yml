@@ -20,6 +20,9 @@ jobs:
       - name: Typecheck
         run: npx tsc -noEmit -skipLibCheck
 
+      - name: Lint
+        run: npm run lint
+
       - name: Test
         run: npm test
 
