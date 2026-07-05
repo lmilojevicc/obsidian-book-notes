@@ -25,7 +25,8 @@ export function replaceDateTokens(text: string): string {
 		const start = m.index ?? 0;
 		const matched = m[0] ?? '';
 		result += text.slice(lastIndex, start);
-		const format = (m[2] ?? '').trim() || 'YYYY-MM-DD';
+		const formatGroup: string | undefined = m[2];
+		const format = (formatGroup ?? '').trim() || 'YYYY-MM-DD';
 		result += moment().format(format);
 		lastIndex = start + matched.length;
 	}
