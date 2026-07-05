@@ -1,7 +1,7 @@
 {
 	"id": "book-notes",
 	"name": "Book Notes",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"minAppVersion": "1.4.10",
 	"description": "Search books via Open Library or Hardcover and create templated notes.",
 	"author": "Luka",
